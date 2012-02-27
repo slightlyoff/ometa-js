@@ -14,69 +14,80 @@
     <script src="workspace.js"></script>
     <script src="wiki.js"></script>
     <script>
+      // Global
+      toggleVisible = function(id) {
+        var style = document.getElementById(id).style;
+        style.visibility = style.visibility == "hidden" ? "visible" : "hidden";
+        style.display    = style.display    == "block"  ? "none"    : "block";
+      }
 
-function toggleVisible(id) {
-  var style = document.getElementById(id).style
-  style.visibility = style.visibility == "hidden" ? "visible" : "hidden"
-  style.display    = style.display    == "block"  ? "none"    : "block"
-}
+      // Global
+      function initializeThisPage() {
+        $('workspaceForm').source.onkeydown = onShortCutKey
+        var makeProjectSelector = function(id) {
+          $(id + "Home").innerHTML =
+            "<select id=" + id +
+            " onChange='loadProject(this.options[this.selectedIndex].value)'><option value=''>(nevermind)</option></select>";
+        };
 
-function initializeThisPage() {
-  $('workspaceForm').source.onkeydown = onShortCutKey
-  var makeProjectSelector = function(id) {
-    $(id + "Home").innerHTML =
-      "<select id=" + id +
-      " onChange='loadProject(this.options[this.selectedIndex].value)'><option value=''>(nevermind)</option></select>"
-  }
-  var addOption = function(toId, x) {
-    var option = document.createElement("option")
-    option.innerHTML = x.replace(/_/g, " ")
-    option.value     = x
-    $(toId).appendChild(option)
-  }
-  makeProjectSelector('infoSelector')
-  addOption('infoSelector', 'Sample_Project')
-  addOption('infoSelector', 'Not_Quite_JS')
-  addOption('infoSelector', 'Things_You_Should_Know')
-  addOption('infoSelector', 'OMeta_Tutorial')
-  addOption('infoSelector', 'Memoizing_Parameterized_Rules')
-  addOption('infoSelector', 'Project_Listing')
-  makeProjectSelector('projectSelector')
-  var ps = $('projectSelector')
-  try {
-    var projects = ProjectListParser.matchAll(readFile("Project_Listing"), "projs")
-    for (var idx = 0; idx < projects.length; idx++)
-      addOption('projectSelector', projects[idx])
-  }
-  catch (e) { }
-  $('workspaceForm').source.value      = $('workspaceForm').source.origValue = ''
-  $('workspaceForm').translation.value = ''
-  $('workspaceForm').transcript.value  = ''
-  loadProject()
-}
+        var addOption = function(toId, x) {
+          var option = document.createElement("option");
+          option.innerHTML = x.replace(/_/g, " ");
+          option.value     = x;
+          $(toId).appendChild(option);
+        };
 
-saveIt = saveProject
+        makeProjectSelector('infoSelector');
+        addOption('infoSelector', 'Sample_Project');
+        addOption('infoSelector', 'Not_Quite_JS');
+        addOption('infoSelector', 'Things_You_Should_Know');
+        addOption('infoSelector', 'OMeta_Tutorial');
+        addOption('infoSelector', 'Memoizing_Parameterized_Rules');
+        addOption('infoSelector', 'Project_Listing');
+        makeProjectSelector('projectSelector');
 
-if (!document.location.hash)
-  document.location.hash = "#Sample_Project"
-titleRest = " - <nobr><span title='In case you are wondering, this is\n" +
-                                  "(OMeta/JS) 2.0, not OMeta/(JS 2.0).\n" +
-                                  "In other words, it has nothing to do\n" +
-                                  "with JS 2 / EcmaScript 2.'>OMeta/JS 2.0</span> Workspace</nobr>"
+        var ps = $('projectSelector');
+        try {
+          var projects = ProjectListParser.matchAll(readFile("Project_Listing"), "projs");
+          for (var idx = 0; idx < projects.length; idx++) {
+            addOption('projectSelector', projects[idx]);
+          }
+        } catch (e) { }
+        $('workspaceForm').source.value      = $('workspaceForm').source.origValue = '';
+        $('workspaceForm').translation.value = '';
+        $('workspaceForm').transcript.value  = '';
+        loadProject();
+      }
 
-function translateCode(s) {
-  var translationError = function(m, i) { alert("Translation error - please tell Alex about this!"); throw fail },
-      tree             = BSOMetaJSParser.matchAll(s, "topLevel", undefined, function(m, i) { throw objectThatDelegatesTo(fail, {errorPos: i}) })
-  return BSOMetaJSTranslator.match(tree, "trans", undefined, translationError)
-}
+      // Global
+      saveIt = saveProject;
 
-function include(fileName) {
-  return eval(readFile(fileName))
-}
+      if (!document.location.hash) {
+        document.location.hash = "#Sample_Project";
+      }
 
+      // Global
+      titleRest = " - <nobr><span title='In case you are wondering, this is\n" +
+                                        "(OMeta/JS) 2.0, not OMeta/(JS 2.0).\n" +
+                                        "In other words, it has nothing to do\n" +
+                                        "with JS 2 / EcmaScript 2.'>OMeta/JS 2.0</span> Workspace</nobr>";
+
+      // Global
+      translateCode = function(s) {
+        var translationError = function(m, i) { alert("Translation error - please tell Alex about this!"); throw fail },
+            tree             = BSOMetaJSParser.matchAll(s, "topLevel", undefined, function(m, i) { throw objectThatDelegatesTo(fail, {errorPos: i}) })
+        return BSOMetaJSTranslator.match(tree, "trans", undefined, translationError)
+      }
+
+      // Global
+      include = function(fileName) {
+        return eval(readFile(fileName))
+      }
+
+      Event.observe(window, "load", initializeThisPage);
     </script>
   </head>
-  <body onLoad="initializeThisPage()">
+  <body>
     <table border=0 align=right>
       <tr><td align=right><b>important info: </b></td><td><span id=infoSelectorHome></span></td></tr>
       <tr><td align=right><b>go to project: </b></td><td><span id=projectSelectorHome></span></td></tr>
