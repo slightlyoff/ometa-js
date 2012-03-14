@@ -1,5 +1,5 @@
 (function(scope) {
- "use strict";
+ // "use strict";
 
   var translateCode = function(s) {
     var translationError = function(m, i) {
