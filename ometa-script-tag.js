@@ -1,5 +1,8 @@
 (function(scope) {
- // "use strict";
+  // FIXME(slightlyoff): 
+  //        Re-enable strict mode when I figure out what's going on with
+  //        global assignments in the compiler.
+  // "use strict";
 
   var translateCode = function(s) {
     var translationError = function(m, i) {
