@@ -18,7 +18,7 @@ ometa M {
 
 translates to...
 
-M = objectThatDelegatesTo(OMeta, {
+M = om.objectThatDelegatesTo(OMeta, {
   number: function() {
             return this._or(function() {
                               var n = this._apply("number"),
@@ -65,7 +65,7 @@ function OMInputStreamEnd(lst, idx) {
   this.lst = lst
   this.idx = idx
 }
-OMInputStreamEnd.prototype = objectThatDelegatesTo(OMInputStream.prototype)
+OMInputStreamEnd.prototype = om.objectThatDelegatesTo(OMInputStream.prototype)
 OMInputStreamEnd.prototype.head = function() { throw fail }
 OMInputStreamEnd.prototype.tail = function() { throw fail }
 
@@ -79,7 +79,7 @@ function ListOMInputStream(lst, idx) {
   this.idx  = idx
   this.hd   = lst.at(idx)
 }
-ListOMInputStream.prototype = objectThatDelegatesTo(OMInputStream.prototype)
+ListOMInputStream.prototype = om.objectThatDelegatesTo(OMInputStream.prototype)
 ListOMInputStream.prototype.head = function() { return this.hd }
 ListOMInputStream.prototype.tail = function() { return this.tl || (this.tl = makeListOMInputStream(this.lst, this.idx + 1)) }
 
@@ -89,7 +89,7 @@ Array.prototype.toOMInputStream  = function() { return makeListOMInputStream(thi
 String.prototype.toOMInputStream = function() { return makeListOMInputStream(this, 0) }
 
 function makeOMInputStreamProxy(target) {
-  return objectThatDelegatesTo(target, {
+  return om.objectThatDelegatesTo(target, {
     memo:   { },
     target: target,
     tl: undefined,
@@ -212,13 +212,17 @@ OMeta = {
   },
   _or: function() {
     var origInput = this.input
-    for (var idx = 0; idx < arguments.length; idx++)
-      try { this.input = origInput; return arguments[idx].call(this) }
-      catch (f) {
-        if (f != fail)
+    for (var idx = 0; idx < arguments.length; idx++) {
+      try {
+        this.input = origInput;
+        return arguments[idx].call(this);
+      } catch (f) {
+        if (f != fail) {
           throw f
+        }
       }
-    throw fail
+    }
+    throw fail;
   },
   _xor: function(ruleName) {
     var origInput = this.input, idx = 1, newInput, ans
@@ -347,7 +351,7 @@ OMeta = {
     return this._apply(r)
   },
   foreign: function(g, r) {
-    var gi  = objectThatDelegatesTo(g, {input: makeOMInputStreamProxy(this.input)}),
+    var gi  = om.objectThatDelegatesTo(g, {input: makeOMInputStreamProxy(this.input)}),
         ans = gi._apply(r)
     this.input = gi.input.target
     return ans
@@ -463,14 +467,19 @@ OMeta = {
   // match and matchAll are a grammar's "public interface"
   _genericMatch: function(input, rule, args, matchFailed) {
     if (args == undefined)
-      args = []
-    var realArgs = [rule]
-    for (var idx = 0; idx < args.length; idx++)
+      args = [];
+    var realArgs = [ rule ];
+    for (var idx = 0; idx < args.length; idx++) {
       realArgs.push(args[idx])
-    var m = objectThatDelegatesTo(this, {input: input})
-    m.initialize()
-    try { return realArgs.length == 1 ? m._apply.call(m, realArgs[0]) : m._applyWithArgs.apply(m, realArgs) }
-    catch (f) {
+    }
+    var m = om.objectThatDelegatesTo(this, {input: input});
+    m.initialize();
+    // try {
+      return realArgs.length == 1 ? 
+              m._apply.call(m, realArgs[0]) :
+              m._applyWithArgs.apply(m, realArgs);
+    /*
+    } catch (f) {
       if (f == fail && matchFailed != undefined) {
         var input = m.input
         if (input.idx != undefined) {
@@ -482,6 +491,7 @@ OMeta = {
       }
       throw f
     }
+    */
   },
   match: function(obj, rule, args, matchFailed) {
     return this._genericMatch([obj].toOMInputStream(),    rule, args, matchFailed)
@@ -490,7 +500,7 @@ OMeta = {
     return this._genericMatch(listyObj.toOMInputStream(), rule, args, matchFailed)
   },
   createInstance: function() {
-    var m = objectThatDelegatesTo(this)
+    var m = om.objectThatDelegatesTo(this)
     m.initialize()
     m.matchAll = function(listyObj, aRule) {
       this.input = listyObj.toOMInputStream()

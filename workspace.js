@@ -42,53 +42,53 @@ function translateCode(s) {
 /* event handler for short cut key */
 function onShortCutKey(evt) {
   evt = evt ? evt : window.event;
-  if (!evt)
-    return undefined;
-  if (!(evt.altKey || evt.ctrlKey || evt.metaKey))
+  if (!evt) { return; }
+  if (!(evt.altKey || evt.ctrlKey || evt.metaKey)) {
     return true;
-  var charCode = evt.charCode ? evt.charCode : evt.keyCode
+  }
+  var charCode = evt.charCode ? evt.charCode : evt.keyCode;
   try {
-    var handledIt = true
+    var handledIt = true;
     switch (charCode) {
-      case 68: doIt();            break
-      case 80: printIt();         break
-      case 83: saveIt();          break
-      default: handledIt = false; return true
+      case 68: doIt();            break;
+      case 80: printIt();         break;
+      case 83: saveIt();          break;
+      default: handledIt = false; return true;
     }
   }
   finally {
     if (handledIt) {
       if (evt.preventDefault) {
-        evt.preventDefault()
-        evt.stopPropagation()
+        evt.preventDefault();
+        evt.stopPropagation();
       }
       else {
-        evt.returnValue  = false
-        evt.cancelBubble = true
+        evt.returnValue  = false;
+        evt.cancelBubble = true;
       }
     }
   }
-  return false
+  return false;
 }
 
 function printIt() {
-  var result       = evalSelection()
-  if (!result)
-    return
+  var result       = evalSelection();
+  if (!result)     return;
+
   var editor       = result.source.editor,
       end          = result.source.end,
       head         = editor.value.substring(0, end),
       tail         = editor.value.substring(end),
-      oldScrollTop = editor.scrollTop
+      oldScrollTop = editor.scrollTop;
   editor.value     = head + result.result + tail;
-  editor.scrollTop = oldScrollTop
-  setCaretSelection(editor, end, head.length + result.result.length)
+  editor.scrollTop = oldScrollTop;
+  setCaretSelection(editor, end, head.length + result.result.length);
 }
 
 function doIt() {
-  var result = evalSelection()
+  var result = evalSelection();
   if (result)
-    result.source.editor.focus()
+    result.source.editor.focus();
 }
 
 function saveIt() { }
@@ -161,9 +161,12 @@ function getSource() {
 }
 
 function evalSelection() {
-  var source = getSource()
-  try { $('workspaceForm').translation.value = translateCode(source.text) }
-  catch (e) {
+  var source = getSource();
+  try {
+    $('workspaceForm').translation.value = translateCode(source.text)
+  } catch (e) {
+    console.log(e);
+    console.log(e.message);
     if (e.errorPos != undefined) {
       var errorPos     = source.start + e.errorPos
           errorMsg     = " Parse error ->",
@@ -175,14 +178,15 @@ function evalSelection() {
     }
     return undefined
   }
+
   try {
     return {
       source: source,
       result: " " + eval($('workspaceForm').translation.value)
-    }
+    };
   } catch (e) {
-    alert("Oops!\n\n" + e)
-    throw e
+    alert("Oops!\n\n" + e);
+    throw e;
   }
 }
 

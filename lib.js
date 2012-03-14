@@ -1,7 +1,19 @@
+(function(scope){
+"use strict";
+
+var extend = function(obj, name, value) {
+  Object.defineProperty(obj, name, {
+    writable: true,
+    configurable: true,
+    enumerable: false,
+    value: value,
+  });
+};
+
+var om = scope.om = (scope["om"] || {});
+
 // make Arrays print themselves sensibly
-
-Array.prototype.toString = (function() {
-
+extend(Array.prototype, "toString", (function() {
   var printOn = function(x, s) {
     s = s || "";
     if (x === undefined || x === null) {
@@ -24,11 +36,10 @@ Array.prototype.toString = (function() {
   return function() {
     return printOn(this);
   }
-})();
+})());
 
 // delegation
-
-objectThatDelegatesTo = function(x, props) {
+om.objectThatDelegatesTo = function(x, props) {
   var f = function() { };
   f.prototype = x;
   var r = new f();
@@ -42,7 +53,7 @@ objectThatDelegatesTo = function(x, props) {
 
 // some reflective stuff
 
-ownPropertyNames = function(x) {
+scope.ownPropertyNames = function(x) {
   var r = [];
   for (var name in x) {
     if (x.hasOwnProperty(name)) {
@@ -52,7 +63,7 @@ ownPropertyNames = function(x) {
   return r
 };
 
-isImmutable = function(x) {
+scope.isImmutable = function(x) {
    return (x === null             ||
            x === undefined        ||
            typeof x === "boolean" ||
@@ -65,7 +76,7 @@ String.prototype.digitValue  = function() {
   return this.charCodeAt(0) - "0".charCodeAt(0);
 };
 
-isSequenceable = function(x) { return typeof x == "string" || x.constructor === Array }
+scope.isSequenceable = function(x) { return typeof x == "string" || x.constructor === Array }
 
 // some functional programming stuff
 
@@ -96,15 +107,16 @@ Array.prototype.delimWith = function(d) {
 
 // Squeak's ReadStream, kind of
 
-function ReadStream(anArrayOrString) {
+scope.ReadStream = function(anArrayOrString) {
   this.src = anArrayOrString;
   this.pos = 0;
 }
 
-ReadStream.prototype.atEnd = function() {
+scope.ReadStream.prototype.atEnd = function() {
   return this.pos >= this.src.length;
 };
-ReadStream.prototype.next  = function() {
+
+scope.ReadStream.prototype.next  = function() {
   return this.src.at(this.pos++);
 };
 
@@ -118,21 +130,21 @@ String.prototype.pad = function(s, len) {
   return r;
 }
 
-escapeStringFor = {};
+scope.escapeStringFor = {};
 for (var c = 0; c < 128; c++) {
-  escapeStringFor[c] = String.fromCharCode(c);
+  scope.escapeStringFor[c] = String.fromCharCode(c);
 }
-escapeStringFor["'".charCodeAt(0)]  = "\\'";
-escapeStringFor['"'.charCodeAt(0)]  = '\\"';
-escapeStringFor["\\".charCodeAt(0)] = "\\\\";
-escapeStringFor["\b".charCodeAt(0)] = "\\b";
-escapeStringFor["\f".charCodeAt(0)] = "\\f";
-escapeStringFor["\n".charCodeAt(0)] = "\\n";
-escapeStringFor["\r".charCodeAt(0)] = "\\r";
-escapeStringFor["\t".charCodeAt(0)] = "\\t";
-escapeStringFor["\v".charCodeAt(0)] = "\\v";
+scope.escapeStringFor["'".charCodeAt(0)]  = "\\'";
+scope.escapeStringFor['"'.charCodeAt(0)]  = '\\"';
+scope.escapeStringFor["\\".charCodeAt(0)] = "\\\\";
+scope.escapeStringFor["\b".charCodeAt(0)] = "\\b";
+scope.escapeStringFor["\f".charCodeAt(0)] = "\\f";
+scope.escapeStringFor["\n".charCodeAt(0)] = "\\n";
+scope.escapeStringFor["\r".charCodeAt(0)] = "\\r";
+scope.escapeStringFor["\t".charCodeAt(0)] = "\\t";
+scope.escapeStringFor["\v".charCodeAt(0)] = "\\v";
 
-escapeChar = function(c) {
+scope.escapeChar = function(c) {
   var charCode = c.charCodeAt(0)
   if (charCode < 128) {
     return escapeStringFor[charCode];
@@ -145,7 +157,7 @@ escapeChar = function(c) {
 
 // FIXME(slightlyoff): can we make this private or stuff it on
 //                     String.prototype? I hate that it's global.
-function unescape(s) {
+scope.unescape = function(s) {
   if (s.charAt(0) != '\\') {
     return s;
   } else {
@@ -177,12 +189,12 @@ String.prototype.toProgramString = function() {
 
 // C-style tempnam function
 
-function tempnam(s) { return (s ? s : "_tmpnam_") + tempnam.n++ }
-tempnam.n = 0
+scope.tempnam = function(s) { return (s ? s : "_tmpnam_") + tempnam.n++ }
+scope.tempnam.n = 0
 
 // unique tags for objects (useful for making "hash tables")
 
-getTag = (function() {
+scope.getTag = (function() {
   var numIdx = 0
   return function(x) {
     if (x === null || x === undefined)
@@ -194,5 +206,6 @@ getTag = (function() {
       default:        return x.hasOwnProperty("_id_") ? x._id_ : x._id_ = "R" + numIdx++
     }
   }
-})()
+})();
 
+})(this);

@@ -1,3 +1,3 @@
-Parser = objectThatDelegatesTo(OMeta, {
+Parser = om.objectThatDelegatesTo(OMeta, {
 })
 
